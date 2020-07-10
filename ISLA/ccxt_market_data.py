@@ -1,35 +1,40 @@
-'''
-Author: www.backtest-rookies.com
- 
-MIT License
- 
-Copyright (c) 2018 backtest-rookies.com
- 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
- 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
- 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-'''
- 
 import ccxt
 from datetime import datetime, timedelta, timezone
 import math
 import argparse
 import pandas as pd
+
+
+def create_ETH_BTC(data_path):
+    trading_pair = 'ETH_BTC'
+    trading_pair_out = 'BTC_ETH'
+    exchange_ = 'binance'
+    timeframe = '1d'
+
+    h = pd.read_csv(data_path + 'binance-{}-1d.csv'.format(trading_pair))
+    h = h.set_index('Timestamp')
+    h_ = h
+    h_[['Open','High','Low','Close']] = 1. / h[['Open','High','Low','Close']]
+    h_['Volume'] = h['Volume']
+
+    filename = '{}-{}-{}.csv'.format(exchange_, trading_pair_out,timeframe)
+    h_.to_csv(data_path + filename)
+    
+def create_ETH_ETH(data_path):
+    trading_pair = 'ETH_USDT'
+    trading_pair_out = 'ETH_ETH'
+    exchange_ = 'binance'
+    timeframe = '1d'
+    
+    h = pd.read_csv(data_path + 'binance-{}-1d.csv'.format(trading_pair))
+    h = h.set_index('Timestamp')
+    h_=h
+    h_[['Open','High','Low','Close']] = 1.
+    filename = '{}-{}-{}.csv'.format(exchange_, trading_pair_out,timeframe)
+    h_.to_csv(data_path + filename)
  
+
+
 def get_market_data(symbol: str, exchange_: str, timeframe: str, save=False, data_path=None):
     '''
     symbol: The Symbol of the Instrument/Currency Pair To Download. You can see the list with exchange.markets.keys()
@@ -81,9 +86,11 @@ def get_market_data(symbol: str, exchange_: str, timeframe: str, save=False, dat
     header = ['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume']
     df = pd.DataFrame(data, columns=header).set_index('Timestamp')
     df = df.set_index(pd.to_datetime(df.index, unit='ms'))
+    
     # Save it
     if save and data_path:
         symbol_out = symbol.replace("/","_")
         filename = '{}-{}-{}.csv'.format(exchange_, symbol_out,timeframe)
         df.to_csv(data_path + filename)
+        
     return df
